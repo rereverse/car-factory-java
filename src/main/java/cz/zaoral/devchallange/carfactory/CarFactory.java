@@ -36,7 +36,6 @@ public class CarFactory {
     UnaryOperator<Car> redPainter = car -> car.paint(RED);
     UnaryOperator<Car> greenPainter = car -> car.paint(GREEN);
     UnaryOperator<Car> bluePainter = car -> car.paint(BLUE);
-
     List<UnaryOperator<Car>> painters = unmodifiableList(asList(redPainter, greenPainter, bluePainter));
 
     Consumer<Car> carFactoryRollOut = System.out::println;
@@ -54,7 +53,7 @@ public class CarFactory {
                 .thenApplyAsync(randomPainter());
     }
 
-    Function<Car, Car> randomPainter() {
+    UnaryOperator<Car> randomPainter() {
         return painters.get(ThreadLocalRandom.current().nextInt(painters.size()));
     }
 
