@@ -54,7 +54,7 @@ public class CarFactory {
                 .thenApplyAsync(randomPainter());
     }
 
-    Function<Car, Car> randomPainter() {
+    UnaryOperator<Car> randomPainter() {
         return painters.get(ThreadLocalRandom.current().nextInt(painters.size()));
     }
 
