@@ -23,16 +23,16 @@ public class CarFactory {
     }
 
     Supplier<Long> serialNumberSupplier = new AtomicLongSerialNumberSupplier();
-
     Supplier<Boolean> faultSupplier = () -> ThreadLocalRandom.current().nextBoolean();
+
     Supplier<Engine> engineSupplier = () -> new Engine(serialNumberSupplier.get(), faultSupplier.get());
     Supplier<Coachwork> coachworkSupplier = () -> new Coachwork(serialNumberSupplier.get(), faultSupplier.get());
-
     Supplier<Wheel> wheelSupplier = () -> new Wheel(serialNumberSupplier.get(), faultSupplier.get());
+
     Function<Engine, Optional<Engine>> engineCheck = e -> e.getFaulty() ? Optional.<Engine>empty() : Optional.of(e);
     Function<Coachwork, Optional<Coachwork>> coachworkCheck = c -> c.getFaulty() ? Optional.<Coachwork>empty() : Optional.of(c);
-
     Function<Wheel, Optional<Wheel>> wheelCheck = w -> w.getFaulty() ? Optional.<Wheel>empty() : Optional.of(w);
+
     UnaryOperator<Car> redPainter = car -> car.paint(RED);
     UnaryOperator<Car> greenPainter = car -> car.paint(GREEN);
     UnaryOperator<Car> bluePainter = car -> car.paint(BLUE);
