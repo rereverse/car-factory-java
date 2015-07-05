@@ -18,29 +18,34 @@ import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 
 public class CarFactory {
-    static Supplier<Long> serialNumberSupplier = new AtomicLongSerialNumberSupplier();
-    static Supplier<Boolean> faultSupplier = () -> ThreadLocalRandom.current().nextBoolean();
-
-    static Supplier<Engine> engineSupplier = () -> new Engine(serialNumberSupplier.get(), faultSupplier.get());
-    static Supplier<Coachwork> coachworkSupplier = () -> new Coachwork(serialNumberSupplier.get(), faultSupplier.get());
-    static Supplier<Wheel> wheelSupplier = () -> new Wheel(serialNumberSupplier.get(), faultSupplier.get());
-
-    static Function<Engine, Optional<Engine>> engineCheck = e -> e.getFaulty() ? Optional.<Engine>empty() : Optional.of(e);
-    static Function<Coachwork, Optional<Coachwork>> coachworkCheck = c -> c.getFaulty() ? Optional.<Coachwork>empty() : Optional.of(c);
-    static Function<Wheel, Optional<Wheel>> wheelCheck = w -> w.getFaulty() ? Optional.<Wheel>empty() : Optional.of(w);
-
-    static UnaryOperator<Car> redPainter = car -> car.paint(RED);
-    static UnaryOperator<Car> greenPainter = car -> car.paint(GREEN);
-    static UnaryOperator<Car> bluePainter = car -> car.paint(BLUE);
-    static List<UnaryOperator<Car>> painters = unmodifiableList(asList(redPainter, greenPainter, bluePainter));
-
-    static Consumer<Car> carFactoryRollOut = System.out::println;
-
     public static void main(String[] args) {
+        new CarFactory();
+    }
+
+    Supplier<Long> serialNumberSupplier = new AtomicLongSerialNumberSupplier();
+
+    Supplier<Boolean> faultSupplier = () -> ThreadLocalRandom.current().nextBoolean();
+    Supplier<Engine> engineSupplier = () -> new Engine(serialNumberSupplier.get(), faultSupplier.get());
+    Supplier<Coachwork> coachworkSupplier = () -> new Coachwork(serialNumberSupplier.get(), faultSupplier.get());
+
+    Supplier<Wheel> wheelSupplier = () -> new Wheel(serialNumberSupplier.get(), faultSupplier.get());
+    Function<Engine, Optional<Engine>> engineCheck = e -> e.getFaulty() ? Optional.<Engine>empty() : Optional.of(e);
+    Function<Coachwork, Optional<Coachwork>> coachworkCheck = c -> c.getFaulty() ? Optional.<Coachwork>empty() : Optional.of(c);
+
+    Function<Wheel, Optional<Wheel>> wheelCheck = w -> w.getFaulty() ? Optional.<Wheel>empty() : Optional.of(w);
+    UnaryOperator<Car> redPainter = car -> car.paint(RED);
+    UnaryOperator<Car> greenPainter = car -> car.paint(GREEN);
+    UnaryOperator<Car> bluePainter = car -> car.paint(BLUE);
+
+    List<UnaryOperator<Car>> painters = unmodifiableList(asList(redPainter, greenPainter, bluePainter));
+
+    Consumer<Car> carFactoryRollOut = System.out::println;
+
+    CarFactory() {
         produceCar().thenAcceptAsync(carFactoryRollOut).join();
     }
 
-    private static CompletableFuture<Car> produceCar() {
+    CompletableFuture<Car> produceCar() {
         return completedFuture(new Car.Builder(serialNumberSupplier.get()))
                 .thenCombineAsync(produceEngine(), Car.Builder::setEngine)
                 .thenCombineAsync(produceCoachwork(), Car.Builder::setCoachwork)
@@ -49,19 +54,19 @@ public class CarFactory {
                 .thenApplyAsync(randomPainter());
     }
 
-    private static Function<Car, Car> randomPainter() {
+    Function<Car, Car> randomPainter() {
         return painters.get(ThreadLocalRandom.current().nextInt(painters.size()));
     }
 
-    private static CompletableFuture<Engine> produceEngine() {
+    CompletableFuture<Engine> produceEngine() {
         return produceCarPart(engineSupplier, engineCheck);
     }
 
-    private static CompletableFuture<Coachwork> produceCoachwork() {
+    CompletableFuture<Coachwork> produceCoachwork() {
         return produceCarPart(coachworkSupplier, coachworkCheck);
     }
 
-    private static CompletableFuture<Wheels> produceWheels() {
+    CompletableFuture<Wheels> produceWheels() {
         return completedFuture(new Wheels.Builder())
                 .thenCombineAsync(produceWheel(), Wheels.Builder::add)
                 .thenCombineAsync(produceWheel(), Wheels.Builder::add)
@@ -70,11 +75,11 @@ public class CarFactory {
                 .thenApplyAsync(Wheels.Builder::build);
     }
 
-    private static CompletableFuture<Wheel> produceWheel() {
+    CompletableFuture<Wheel> produceWheel() {
         return produceCarPart(wheelSupplier, wheelCheck);
     }
 
-    private static <T extends CarPart> CompletableFuture<T> produceCarPart(
+    <T extends CarPart> CompletableFuture<T> produceCarPart(
             Supplier<T> carPartSupplier, Function<T, Optional<T>> check) {
         return supplyAsync(carPartSupplier::get)
                 .thenApplyAsync(check)
