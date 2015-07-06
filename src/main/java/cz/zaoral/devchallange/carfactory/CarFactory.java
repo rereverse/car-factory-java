@@ -14,6 +14,7 @@ import java.util.function.UnaryOperator;
 import static cz.zaoral.devchallange.carfactory.model.CarColour.*;
 import static java.util.Arrays.asList;
 import static java.util.Collections.unmodifiableList;
+import static java.util.Optional.empty;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 
@@ -29,9 +30,9 @@ public class CarFactory {
     Supplier<Coachwork> coachworkSupplier = () -> new Coachwork(serialNumberSupplier.get(), faultSupplier.get());
     Supplier<Wheel> wheelSupplier = () -> new Wheel(serialNumberSupplier.get(), faultSupplier.get());
 
-    Function<Engine, Optional<Engine>> engineCheck = e -> e.getFaulty() ? Optional.<Engine>empty() : Optional.of(e);
-    Function<Coachwork, Optional<Coachwork>> coachworkCheck = c -> c.getFaulty() ? Optional.<Coachwork>empty() : Optional.of(c);
-    Function<Wheel, Optional<Wheel>> wheelCheck = w -> w.getFaulty() ? Optional.<Wheel>empty() : Optional.of(w);
+    Function<Engine, Optional<Engine>> engineCheck = e -> !e.getFaulty() ? Optional.of(e) : empty();
+    Function<Coachwork, Optional<Coachwork>> coachworkCheck = c -> !c.getFaulty() ? Optional.of(c) : empty();
+    Function<Wheel, Optional<Wheel>> wheelCheck = w -> !w.getFaulty() ? Optional.of(w) : empty();
 
     UnaryOperator<Car> redPainter = car -> car.paint(RED);
     UnaryOperator<Car> greenPainter = car -> car.paint(GREEN);
@@ -46,15 +47,14 @@ public class CarFactory {
 
     CompletableFuture<Car> produceCar() {
         return completedFuture(new Car.Builder(serialNumberSupplier.get()))
-                .thenCombineAsync(produceEngine(), Car.Builder::setEngine)
-                .thenCombineAsync(produceCoachwork(), Car.Builder::setCoachwork)
-                .thenCombineAsync(produceWheels(), Car.Builder::setWheels)
+                .thenCombineAsync(produceEngine(), Car.Builder::addEngine)
+                .thenCombineAsync(produceCoachwork(), Car.Builder::addCoachwork)
+                .thenCombineAsync(produceWheel(), Car.Builder::addWheel)
+                .thenCombineAsync(produceWheel(), Car.Builder::addWheel)
+                .thenCombineAsync(produceWheel(), Car.Builder::addWheel)
+                .thenCombineAsync(produceWheel(), Car.Builder::addWheel)
                 .thenApplyAsync(Car.Builder::build)
                 .thenApplyAsync(randomPainter());
-    }
-
-    UnaryOperator<Car> randomPainter() {
-        return painters.get(ThreadLocalRandom.current().nextInt(painters.size()));
     }
 
     CompletableFuture<Engine> produceEngine() {
@@ -63,15 +63,6 @@ public class CarFactory {
 
     CompletableFuture<Coachwork> produceCoachwork() {
         return produceCarPart(coachworkSupplier, coachworkCheck);
-    }
-
-    CompletableFuture<Wheels> produceWheels() {
-        return completedFuture(new Wheels.Builder())
-                .thenCombineAsync(produceWheel(), Wheels.Builder::add)
-                .thenCombineAsync(produceWheel(), Wheels.Builder::add)
-                .thenCombineAsync(produceWheel(), Wheels.Builder::add)
-                .thenCombineAsync(produceWheel(), Wheels.Builder::add)
-                .thenApplyAsync(Wheels.Builder::build);
     }
 
     CompletableFuture<Wheel> produceWheel() {
@@ -85,5 +76,9 @@ public class CarFactory {
                 .thenComposeAsync(optionalCarPart -> optionalCarPart.isPresent()
                         ? completedFuture(optionalCarPart.get())
                         : produceCarPart(carPartSupplier, check));
+    }
+
+    UnaryOperator<Car> randomPainter() {
+        return painters.get(ThreadLocalRandom.current().nextInt(painters.size()));
     }
 }
