@@ -1,6 +1,7 @@
-package cz.zaoral.devchallange.carfactory;
+package cz.zaoral.devchallange.carfactory.application;
 
-import cz.zaoral.devchallange.carfactory.model.*;
+import cz.zaoral.devchallange.carfactory.AtomicLongSerialNumberSupplier;
+import cz.zaoral.devchallange.carfactory.application.model.*;
 
 import java.util.List;
 import java.util.Optional;
@@ -11,7 +12,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
-import static cz.zaoral.devchallange.carfactory.model.CarColour.*;
+import static cz.zaoral.devchallange.carfactory.application.model.CarColour.*;
 import static java.util.Arrays.asList;
 import static java.util.Collections.unmodifiableList;
 import static java.util.Optional.empty;
@@ -19,10 +20,6 @@ import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 
 public class CarFactory {
-    public static void main(String[] args) {
-        new CarFactory();
-    }
-
     Supplier<Long> serialNumberSupplier = new AtomicLongSerialNumberSupplier();
     Supplier<Boolean> faultSupplier = () -> ThreadLocalRandom.current().nextBoolean();
 
@@ -39,10 +36,8 @@ public class CarFactory {
     UnaryOperator<Car> bluePainter = car -> car.paint(BLUE);
     List<UnaryOperator<Car>> painters = unmodifiableList(asList(redPainter, greenPainter, bluePainter));
 
-    Consumer<Car> carFactoryRollOut = System.out::println;
-
-    CarFactory() {
-        produceCar().thenAcceptAsync(carFactoryRollOut).join();
+    public void rollOutACar(Consumer<Car> carConsumer) {
+        produceCar().thenAcceptAsync(carConsumer);
     }
 
     CompletableFuture<Car> produceCar() {

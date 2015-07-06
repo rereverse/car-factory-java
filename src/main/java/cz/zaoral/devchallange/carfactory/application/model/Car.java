@@ -1,4 +1,4 @@
-package cz.zaoral.devchallange.carfactory.model;
+package cz.zaoral.devchallange.carfactory.application.model;
 
 import lombok.Getter;
 import lombok.ToString;
@@ -6,7 +6,7 @@ import lombok.ToString;
 import java.util.LinkedList;
 import java.util.List;
 
-import static cz.zaoral.devchallange.carfactory.model.CarColour.NOT_PAINTED;
+import static cz.zaoral.devchallange.carfactory.application.model.CarColour.NOT_PAINTED;
 import static cz.zaoral.devchallange.carfactory.util.Ensuring.ensuring;
 import static cz.zaoral.devchallange.carfactory.util.Ensuring.ensuringNotNull;
 import static java.util.Collections.unmodifiableList;

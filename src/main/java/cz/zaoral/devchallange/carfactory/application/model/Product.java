@@ -1,4 +1,4 @@
-package cz.zaoral.devchallange.carfactory.model;
+package cz.zaoral.devchallange.carfactory.application.model;
 
 import lombok.Getter;
 import lombok.ToString;
