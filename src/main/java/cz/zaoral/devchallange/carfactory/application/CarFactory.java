@@ -11,7 +11,6 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
-import static cz.zaoral.devchallange.carfactory.util.Util.ensuring;
 import static cz.zaoral.devchallange.carfactory.util.Util.ensuringNotNull;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
@@ -28,7 +27,7 @@ public class CarFactory {
     }
 
     public void rollOutCars(Integer numberOfCars, Consumer<Car> consumer) {
-        for (int rolled = 0, todo = ensuring(numberOfCars, n -> n > 0); rolled < todo; rolled++) {
+        for (int rolled = 0; rolled < numberOfCars; rolled++) {
             rollOutACar(consumer);
         }
     }

@@ -10,7 +10,7 @@ import java.util.concurrent.*;
 import java.util.function.Supplier;
 
 public class CarFactorySupply {
-    private ExecutorService executorService = ForkJoinPool.commonPool();
+    private ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
     private Supplier<Long> incrementSerialNumber = new IncrementSerialNumber();
     private Supplier<Boolean> faultSupplier = () -> ThreadLocalRandom.current().nextBoolean();
     private Supplier<Engine> engineSupplier = () -> new Engine(incrementSerialNumber.get(), faultSupplier.get());
