@@ -11,7 +11,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
-import static cz.zaoral.devchallange.carfactory.util.Util.ensuringNotNull;
+import static cz.zaoral.devchallange.carfactory.util.Utils.ensuringNotNull;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 
@@ -26,12 +26,6 @@ public class CarFactory {
         produceCar().thenAcceptAsync(carConsumer);
     }
 
-    public void rollOutCars(Integer numberOfCars, Consumer<Car> consumer) {
-        for (int rolled = 0; rolled < numberOfCars; rolled++) {
-            rollOutACar(consumer);
-        }
-    }
-
     CompletableFuture<Car> produceCar() {
         return completedFuture(new CarBeingBuilt(supply.serialNumber()))
                 .thenCombineAsync(produceCoachwork(), CarBeingBuilt::addCoachwork, supply.worker())
@@ -40,8 +34,8 @@ public class CarFactory {
                 .thenCombineAsync(produceWheel(), CarBeingBuilt::addWheel, supply.worker())
                 .thenCombineAsync(produceWheel(), CarBeingBuilt::addWheel, supply.worker())
                 .thenCombineAsync(produceWheel(), CarBeingBuilt::addWheel, supply.worker())
-                .thenApplyAsync(CarBeingBuilt::build)
-                .thenApplyAsync(paintWithRandomColour());
+                .thenApplyAsync(CarBeingBuilt::build, supply.worker())
+                .thenApplyAsync(paintWithRandomColour(), supply.worker());
     }
 
     CompletableFuture<Engine> produceEngine() {
@@ -57,9 +51,9 @@ public class CarFactory {
     }
 
     <T extends CarPart> CompletableFuture<T> produceCarPart(Supplier<T> carPartSupplier) {
-        return supplyAsync(carPartSupplier::get)
-                .thenApplyAsync(qualityControl())
-                .thenComposeAsync(anotherIfThisDefective(carPartSupplier));
+        return supplyAsync(carPartSupplier::get, supply.worker())
+                .thenApplyAsync(qualityControl(), supply.worker())
+                .thenComposeAsync(anotherIfThisDefective(carPartSupplier), supply.worker());
 
     }
 

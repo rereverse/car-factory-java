@@ -7,8 +7,8 @@ import java.util.LinkedList;
 import java.util.List;
 
 import static cz.zaoral.devchallange.carfactory.application.model.CarColour.NOT_PAINTED;
-import static cz.zaoral.devchallange.carfactory.util.Util.ensuring;
-import static cz.zaoral.devchallange.carfactory.util.Util.ensuringNotNull;
+import static cz.zaoral.devchallange.carfactory.util.Utils.ensuring;
+import static cz.zaoral.devchallange.carfactory.util.Utils.ensuringNotNull;
 import static java.util.Collections.unmodifiableList;
 
 @ToString(callSuper = true)
