@@ -1,79 +1,81 @@
 package cz.zaoral.devchallange.carfactory.application;
 
-import cz.zaoral.devchallange.carfactory.AtomicLongSerialNumberSupplier;
 import cz.zaoral.devchallange.carfactory.application.model.*;
+import cz.zaoral.devchallange.carfactory.application.model.Car.CarBeingBuilt;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.CompletionStage;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
-import static cz.zaoral.devchallange.carfactory.application.model.CarColour.*;
-import static java.util.Arrays.asList;
-import static java.util.Collections.unmodifiableList;
-import static java.util.Optional.empty;
+import static cz.zaoral.devchallange.carfactory.util.Util.ensuring;
+import static cz.zaoral.devchallange.carfactory.util.Util.ensuringNotNull;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 
 public class CarFactory {
-    Supplier<Long> serialNumberSupplier = new AtomicLongSerialNumberSupplier();
-    Supplier<Boolean> faultSupplier = () -> ThreadLocalRandom.current().nextBoolean();
+    private final CarFactorySupply supply;
 
-    Supplier<Engine> engineSupplier = () -> new Engine(serialNumberSupplier.get(), faultSupplier.get());
-    Supplier<Coachwork> coachworkSupplier = () -> new Coachwork(serialNumberSupplier.get(), faultSupplier.get());
-    Supplier<Wheel> wheelSupplier = () -> new Wheel(serialNumberSupplier.get(), faultSupplier.get());
-
-    Function<Engine, Optional<Engine>> engineCheck = e -> !e.getFaulty() ? Optional.of(e) : empty();
-    Function<Coachwork, Optional<Coachwork>> coachworkCheck = c -> !c.getFaulty() ? Optional.of(c) : empty();
-    Function<Wheel, Optional<Wheel>> wheelCheck = w -> !w.getFaulty() ? Optional.of(w) : empty();
-
-    UnaryOperator<Car> redPainter = car -> car.paint(RED);
-    UnaryOperator<Car> greenPainter = car -> car.paint(GREEN);
-    UnaryOperator<Car> bluePainter = car -> car.paint(BLUE);
-    List<UnaryOperator<Car>> painters = unmodifiableList(asList(redPainter, greenPainter, bluePainter));
+    public CarFactory(CarFactorySupply supply) {
+        this.supply = ensuringNotNull(supply);
+    }
 
     public void rollOutACar(Consumer<Car> carConsumer) {
         produceCar().thenAcceptAsync(carConsumer);
     }
 
+    public void rollOutCars(Integer numberOfCars, Consumer<Car> consumer) {
+        for (int rolled = 0, todo = ensuring(numberOfCars, n -> n > 0); rolled < todo; rolled++) {
+            rollOutACar(consumer);
+        }
+    }
+
     CompletableFuture<Car> produceCar() {
-        return completedFuture(new Car.Builder(serialNumberSupplier.get()))
-                .thenCombineAsync(produceEngine(), Car.Builder::addEngine)
-                .thenCombineAsync(produceCoachwork(), Car.Builder::addCoachwork)
-                .thenCombineAsync(produceWheel(), Car.Builder::addWheel)
-                .thenCombineAsync(produceWheel(), Car.Builder::addWheel)
-                .thenCombineAsync(produceWheel(), Car.Builder::addWheel)
-                .thenCombineAsync(produceWheel(), Car.Builder::addWheel)
-                .thenApplyAsync(Car.Builder::build)
-                .thenApplyAsync(randomPainter());
+        return completedFuture(new CarBeingBuilt(supply.serialNumber()))
+                .thenCombineAsync(produceCoachwork(), CarBeingBuilt::addCoachwork, supply.worker())
+                .thenCombineAsync(produceEngine(), CarBeingBuilt::addEngine, supply.worker())
+                .thenCombineAsync(produceWheel(), CarBeingBuilt::addWheel, supply.worker())
+                .thenCombineAsync(produceWheel(), CarBeingBuilt::addWheel, supply.worker())
+                .thenCombineAsync(produceWheel(), CarBeingBuilt::addWheel, supply.worker())
+                .thenCombineAsync(produceWheel(), CarBeingBuilt::addWheel, supply.worker())
+                .thenApplyAsync(CarBeingBuilt::build)
+                .thenApplyAsync(paintWithRandomColour());
     }
 
     CompletableFuture<Engine> produceEngine() {
-        return produceCarPart(engineSupplier, engineCheck);
+        return produceCarPart(supply.engineSupplier());
     }
 
     CompletableFuture<Coachwork> produceCoachwork() {
-        return produceCarPart(coachworkSupplier, coachworkCheck);
+        return produceCarPart(supply.coachworkSupplier());
     }
 
     CompletableFuture<Wheel> produceWheel() {
-        return produceCarPart(wheelSupplier, wheelCheck);
+        return produceCarPart(supply.wheelSupplier());
     }
 
-    <T extends CarPart> CompletableFuture<T> produceCarPart(
-            Supplier<T> carPartSupplier, Function<T, Optional<T>> check) {
+    <T extends CarPart> CompletableFuture<T> produceCarPart(Supplier<T> carPartSupplier) {
         return supplyAsync(carPartSupplier::get)
-                .thenApplyAsync(check)
-                .thenComposeAsync(optionalCarPart -> optionalCarPart.isPresent()
-                        ? completedFuture(optionalCarPart.get())
-                        : produceCarPart(carPartSupplier, check));
+                .thenApplyAsync(qualityControl())
+                .thenComposeAsync(anotherIfThisDefective(carPartSupplier));
+
     }
 
-    UnaryOperator<Car> randomPainter() {
-        return painters.get(ThreadLocalRandom.current().nextInt(painters.size()));
+    private <T extends CarPart> Function<Optional<T>, CompletionStage<T>> anotherIfThisDefective(
+            Supplier<T> carPartSupplier) {
+        return carPart -> carPart.isPresent()
+                ? completedFuture(carPart.get())
+                : produceCarPart(carPartSupplier);
+    }
+
+    private <T extends CarPart> Function<T, Optional<T>> qualityControl() {
+        return t -> t.defective() ? Optional.<T>empty() : Optional.of(t);
+    }
+
+    private UnaryOperator<Car> paintWithRandomColour() {
+        return car -> car.paint(supply.pickRandomColour());
     }
 }

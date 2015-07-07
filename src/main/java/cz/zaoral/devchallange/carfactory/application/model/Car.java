@@ -7,8 +7,8 @@ import java.util.LinkedList;
 import java.util.List;
 
 import static cz.zaoral.devchallange.carfactory.application.model.CarColour.NOT_PAINTED;
-import static cz.zaoral.devchallange.carfactory.util.Ensuring.ensuring;
-import static cz.zaoral.devchallange.carfactory.util.Ensuring.ensuringNotNull;
+import static cz.zaoral.devchallange.carfactory.util.Util.ensuring;
+import static cz.zaoral.devchallange.carfactory.util.Util.ensuringNotNull;
 import static java.util.Collections.unmodifiableList;
 
 @ToString(callSuper = true)
@@ -36,13 +36,13 @@ public class Car extends Product {
     }
 
     @Getter
-    public static class Builder {
+    public static class CarBeingBuilt {
         private final Long serialNumber;
         private Engine engine;
         private Coachwork coachwork;
         private List<Wheel> wheels = new LinkedList<>();
 
-        public Builder(Long serialNumber) {
+        public CarBeingBuilt(Long serialNumber) {
             this.serialNumber = serialNumber;
         }
 
@@ -50,17 +50,17 @@ public class Car extends Product {
             return new Car(serialNumber, engine, coachwork, wheels, NOT_PAINTED);
         }
 
-        public Builder addEngine(Engine engine) {
+        public CarBeingBuilt addEngine(Engine engine) {
             this.engine = engine;
             return this;
         }
 
-        public Builder addCoachwork(Coachwork coachwork) {
+        public CarBeingBuilt addCoachwork(Coachwork coachwork) {
             this.coachwork = coachwork;
             return this;
         }
 
-        public Builder addWheel(Wheel wheel) {
+        public CarBeingBuilt addWheel(Wheel wheel) {
             this.wheels.add(wheel);
             return this;
         }
