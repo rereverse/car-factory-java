@@ -17,7 +17,6 @@ import static java.util.concurrent.TimeUnit.MINUTES;
 
 public class SimulationModel {
     static final double THROUGHPUT_DECREASE_RATIO = 1 / 3.0;
-
     static final double THROUGHPUT_INCREASE_RATIO = 2.0;
     static ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
 
@@ -27,24 +26,22 @@ public class SimulationModel {
     static CarFactorySupply carFactorySupply = new CarFactorySupply();
     static CarFactory carFactory = new CarFactory(carFactorySupply);
 
-    static Runnable requestNewCars = () -> {
-        final Integer measuredThroughput = throughputMeasuring.getAndReset();
-        requestedThroughput = adjustThrougput(measuredThroughput);
-        System.out.println(format("Measured throughput: %d, Requested throughput: %d", measuredThroughput, requestedThroughput));
-        carFactory.rollOutCars(requestedThroughput, throughputMeasuring);
-    };
-
-    private static ScheduledFuture<?> startProduction() {
-        return scheduledExecutorService.scheduleAtFixedRate(requestNewCars, NO_DELAY, ONE, MINUTES);
-    }
-
     public static void main(String[] args) throws InterruptedException, IOException {
-        cancelOnUserInteraction(startProduction());
+        final ScheduledFuture<?> scheduledFuture = scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
+            @Override
+            public void run() {
+                final Integer measuredThroughput = throughputMeasuring.getAndReset();
+                requestedThroughput = adjustThrougput(measuredThroughput);
+                System.out.println(format("Measured throughput: %d, Requested throughput: %d", measuredThroughput, requestedThroughput));
+                carFactory.rollOutCars(requestedThroughput, throughputMeasuring);
+            }
+        }, NO_DELAY, ONE, MINUTES);
+        cancelOnUserInteraction(scheduledFuture);
         carFactorySupply.executorService().awaitTermination(1, MINUTES);
+        scheduledExecutorService.shutdownNow();
     }
 
     private static void cancelOnUserInteraction(ScheduledFuture<?> factoryProduction) throws IOException {
-        System.in.read();
         factoryProduction.cancel(SOFT_SHUTDOWN);
     }
 
