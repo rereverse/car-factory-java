@@ -22,8 +22,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 
-import static cz.zaoral.devchallange.carfactory.util.Utils.FIVE;
+import static cz.zaoral.devchallange.carfactory.util.Utils.ONE;
 import static cz.zaoral.devchallange.carfactory.util.Utils.defaultAsyncForkJoinPool;
+import static java.lang.Boolean.FALSE;
 import static java.util.concurrent.Executors.newSingleThreadScheduledExecutor;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static javafx.collections.FXCollections.observableList;
@@ -39,7 +40,7 @@ public class Main extends Application {
     private final ScheduledExecutorService scheduledExecutorService = newSingleThreadScheduledExecutor();
     private final AtomicLong rolledOutCounter = new AtomicLong();
     private final AtomicInteger secondsCounter = new AtomicInteger();
-    private final ExponentialMovingAverage ema = new ExponentialMovingAverage(3);
+    private final ExponentialMovingAverage ema = new ExponentialMovingAverage(13);
 
     private final ObservableList<Data<Number, Number>> throughput = observableList(new LinkedList<>());
     private final ObservableList<Data<Number, Number>> throughputSmoothed = observableList(new LinkedList<>());
@@ -63,11 +64,11 @@ public class Main extends Application {
 
     private void startThroughputSampling() {
         scheduledExecutorService.scheduleAtFixedRate(() -> {
-            final Integer second = secondsCounter.addAndGet(FIVE.intValue());
+            final Integer second = secondsCounter.incrementAndGet();
             final Long rolledOutSinceLastCheck = rolledOutCounter.getAndSet(0);
             final Optional<Double> ema = this.ema.apply(rolledOutSinceLastCheck.doubleValue());
             Platform.runLater(updateThroughPuts(second, rolledOutSinceLastCheck, ema));
-        }, FIVE, FIVE, SECONDS);
+        }, ONE, ONE, SECONDS);
     }
 
     private Runnable updateThroughPuts(Integer second, Long immediateValue, Optional<Double> smoothedValue) {
@@ -102,13 +103,15 @@ public class Main extends Application {
     private LineChart<Number, Number> createChart() {
         final NumberAxis xAxis = new NumberAxis();
         final NumberAxis yAxis = new NumberAxis();
+        yAxis.setForceZeroInRange(false);
         xAxis.setLabel("Time (seconds)");
-        yAxis.setLabel("TP / 5 s");
+        yAxis.setLabel("Cars / s");
         final LineChart<Number, Number> lineChart = new LineChart<>(xAxis, yAxis);
-        lineChart.getData().add(new Series<>("TP", throughput));
-        final Series<Number, Number> e = new Series<>("EMA(TP, 3)", throughputSmoothed);
-        lineChart.getData().add(e);
+        lineChart.getData().add(new Series<>("Cars", throughput));
+        lineChart.getData().add(new Series<>("EMA(Cars, 13)", throughputSmoothed));
         lineChart.setTitle("Car Factory throughput");
+        lineChart.setAnimated(FALSE);
+        lineChart.setCreateSymbols(FALSE);
         return lineChart;
     }
 }
