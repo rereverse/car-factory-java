@@ -6,10 +6,7 @@ import cz.zaoral.devchallange.carfactory.application.model.Car.CarBeingBuilt;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
-import java.util.function.UnaryOperator;
+import java.util.function.*;
 
 import static cz.zaoral.devchallange.carfactory.util.Utils.ensuringNotNull;
 import static java.util.concurrent.CompletableFuture.completedFuture;
@@ -50,7 +47,7 @@ public class CarFactory {
         return produceCarPart(supply.wheelSupplier());
     }
 
-    <T extends CarPart> CompletableFuture<T> produceCarPart(Supplier<T> carPartSupplier) {
+    private <T extends CarPart> CompletableFuture<T> produceCarPart(Supplier<T> carPartSupplier) {
         return supplyAsync(carPartSupplier::get, supply.worker())
                 .thenApplyAsync(qualityControl(), supply.worker())
                 .thenComposeAsync(anotherIfThisDefective(carPartSupplier), supply.worker());
@@ -61,7 +58,7 @@ public class CarFactory {
             Supplier<T> carPartSupplier) {
         return carPart -> carPart.isPresent()
                 ? completedFuture(carPart.get())
-                : produceCarPart(carPartSupplier);
+                : produceCarPart(carPartSupplier); // not recursion!
     }
 
     private <T extends CarPart> Function<T, Optional<T>> qualityControl() {
