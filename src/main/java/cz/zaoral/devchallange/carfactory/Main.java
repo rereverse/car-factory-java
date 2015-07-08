@@ -46,6 +46,7 @@ public class Main extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
+        // https://community.oracle.com/thread/2413087
         startCarFactory();
         startThroughputSampling();
         createAndShow(stage);
@@ -101,11 +102,11 @@ public class Main extends Application {
     private LineChart<Number, Number> createChart() {
         final NumberAxis xAxis = new NumberAxis();
         final NumberAxis yAxis = new NumberAxis();
-        xAxis.setLabel("seconds");
-        yAxis.setLabel("throughput");
+        xAxis.setLabel("Time (seconds)");
+        yAxis.setLabel("TP / 5 s");
         final LineChart<Number, Number> lineChart = new LineChart<>(xAxis, yAxis);
-        lineChart.getData().add(new Series<>("throughput", throughput));
-        final Series<Number, Number> e = new Series<>("throughput smoothed", throughputSmoothed);
+        lineChart.getData().add(new Series<>("TP", throughput));
+        final Series<Number, Number> e = new Series<>("EMA(TP, 3)", throughputSmoothed);
         lineChart.getData().add(e);
         lineChart.setTitle("Car Factory throughput");
         return lineChart;
