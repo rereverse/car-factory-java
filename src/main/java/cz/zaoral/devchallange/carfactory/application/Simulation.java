@@ -1,8 +1,5 @@
-package cz.zaoral.devchallange.carfactory;
+package cz.zaoral.devchallange.carfactory.application;
 
-import cz.zaoral.devchallange.carfactory.application.CarFactory;
-import cz.zaoral.devchallange.carfactory.application.CarFactoryProductionControl;
-import cz.zaoral.devchallange.carfactory.application.CarFactorySupply;
 import lombok.Getter;
 
 import java.util.concurrent.ExecutorService;
@@ -15,16 +12,13 @@ public class Simulation {
     @Getter
     private CarFactorySupply carFactorySupply;
     @Getter
-    private CarFactory carFactory;
-    @Getter
     private CarFactoryProductionControl carFactoryProductionControl;
 
     public void start() {
         executorService = defaultAsyncForkJoinPool();
         carFactorySupply = new CarFactorySupply(executorService, DEFAULT_DEFECTION_PROBABILITY,
                 DEFAULT_DEFECTION_PROBABILITY, DEFAULT_DEFECTION_PROBABILITY);
-        carFactory = new CarFactory(carFactorySupply);
-        carFactoryProductionControl = new CarFactoryProductionControl(carFactory);
+        carFactoryProductionControl = new CarFactoryProductionControl(new CarFactory(carFactorySupply));
         carFactoryProductionControl.startProduction();
     }
 

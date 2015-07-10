@@ -10,8 +10,7 @@ public class Utils {
     private Utils() {
     }
 
-    public static final int TIME_WINDOW_SIZE = 780;
-    public static final Long SAMPLING_SPEED = 1L;
+    public static final Long HEART_BEAT_SPEED = 1L;
     public static final boolean DONT_INTERRUPT_IF_RUNNING = Boolean.FALSE;
     public static final double DEFAULT_DEFECTION_PROBABILITY = 0.1;
 
