@@ -1,6 +1,7 @@
 package cz.zaoral.devchallange.carfactory.application.gui;
 
 import javafx.geometry.Insets;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
@@ -13,9 +14,9 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import lombok.Getter;
 
+import java.util.stream.Stream;
+
 import static cz.zaoral.devchallange.carfactory.application.gui.Model.EMA_PERIOD;
-import static cz.zaoral.devchallange.carfactory.application.gui.View.ViewState.SIMULATION_STARTED;
-import static cz.zaoral.devchallange.carfactory.application.gui.View.ViewState.SIMULATION_STOPPED;
 import static cz.zaoral.devchallange.carfactory.util.Utils.DEFAULT_DEFECTION_PROBABILITY;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
@@ -98,12 +99,13 @@ public class View {
         hBox.setSpacing(10);
 
         startButton.setOnAction(e -> runLater(() -> {
-            updateView(SIMULATION_STARTED);
+            toggleControls();
+            applyDefectionsButton.fire();
             controller.startSimulation();
         }));
 
         stopButton.setOnAction(e -> runLater(() -> {
-            updateView(SIMULATION_STARTED);
+            toggleControls();
             controller.stopSimulation();
         }));
 
@@ -119,19 +121,11 @@ public class View {
         return vbox;
     }
 
-    private void updateView(ViewState viewState) {
-        if (viewState == SIMULATION_STARTED) {
-            startButton.setDisable(TRUE);
-            stopButton.setDisable(FALSE);
-            applyDefectionsButton.setDisable(FALSE);
-        } else if (viewState == SIMULATION_STOPPED) {
-            startButton.setDisable(FALSE);
-            stopButton.setDisable(TRUE);
-            applyDefectionsButton.setDisable(TRUE);
-        }
+    private void toggleControls() {
+        toggleDisable(startButton, stopButton, applyDefectionsButton);
     }
 
-    enum ViewState {
-        SIMULATION_STARTED, SIMULATION_STOPPED;
+    private void toggleDisable(Node... nodes) {
+        Stream.of(nodes).forEach(node -> node.setDisable(!node.isDisable()));
     }
 }
