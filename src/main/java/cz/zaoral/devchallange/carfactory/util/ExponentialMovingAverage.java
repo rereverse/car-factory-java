@@ -9,6 +9,9 @@ import static java.util.Optional.empty;
 
 @ToString
 public class ExponentialMovingAverage implements Function<Double, Optional<Double>> {
+    public static ExponentialMovingAverage newEma(Integer period) {
+        return new ExponentialMovingAverage(period);
+    }
     private final SimpleMovingAverage sma;
     private final Double multiplier;
     private Optional<Double> ema = empty();

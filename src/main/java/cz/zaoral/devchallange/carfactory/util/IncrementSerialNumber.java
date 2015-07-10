@@ -1,4 +1,4 @@
-package cz.zaoral.devchallange.carfactory;
+package cz.zaoral.devchallange.carfactory.util;
 
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Supplier;

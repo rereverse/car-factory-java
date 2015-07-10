@@ -6,7 +6,10 @@ import cz.zaoral.devchallange.carfactory.application.model.Car.CarBeingBuilt;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-import java.util.function.*;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
 
 import static cz.zaoral.devchallange.carfactory.util.Utils.ensuringNotNull;
 import static java.util.concurrent.CompletableFuture.completedFuture;
@@ -18,20 +21,20 @@ public class CarFactory {
     public CarFactory(CarFactorySupply supply) {
         this.supply = ensuringNotNull(supply);
     }
-
+    
     public void rollOutACar(Consumer<Car> carConsumer) {
         produceCar().thenAcceptAsync(carConsumer);
     }
 
     CompletableFuture<Car> produceCar() {
-        return completedFuture(new CarBeingBuilt(supply.serialNumber()))
-                .thenCombineAsync(produceCoachwork(), CarBeingBuilt::addCoachwork, supply.worker())
-                .thenCombineAsync(produceEngine(), CarBeingBuilt::addEngine, supply.worker())
-                .thenCombineAsync(produceWheel(), CarBeingBuilt::addWheel, supply.worker())
-                .thenCombineAsync(produceWheel(), CarBeingBuilt::addWheel, supply.worker())
-                .thenCombineAsync(produceWheel(), CarBeingBuilt::addWheel, supply.worker())
-                .thenCombineAsync(produceWheel(), CarBeingBuilt::addWheel, supply.worker())
-                .thenApplyAsync(CarBeingBuilt::build, supply.worker())
+        return supplyAsync(() -> new CarBeingBuilt(supply.serialNumber()), supply.worker())
+                .thenCombine(produceCoachwork(), CarBeingBuilt::addCoachwork)
+                .thenCombine(produceEngine(), CarBeingBuilt::addEngine)
+                .thenCombine(produceWheel(), CarBeingBuilt::addWheel)
+                .thenCombine(produceWheel(), CarBeingBuilt::addWheel)
+                .thenCombine(produceWheel(), CarBeingBuilt::addWheel)
+                .thenCombine(produceWheel(), CarBeingBuilt::addWheel)
+                .thenApply(CarBeingBuilt::build)
                 .thenApplyAsync(paintWithRandomColour(), supply.worker());
     }
 
@@ -58,7 +61,7 @@ public class CarFactory {
             Supplier<T> carPartSupplier) {
         return carPart -> carPart.isPresent()
                 ? completedFuture(carPart.get())
-                : produceCarPart(carPartSupplier); // not recursion!
+                : produceCarPart(carPartSupplier);
     }
 
     private <T extends CarPart> Function<T, Optional<T>> qualityControl() {
