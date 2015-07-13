@@ -69,7 +69,7 @@ public class Controller {
     }
 
     private Predicate<Double> defFieldInBounds() {
-        return p -> p >= 0.0 && p <= 0.80;
+        return p -> p >= 0.0 && p <= 1;
     }
 
     private void startUiUpdate(Runnable... heartBeatActions) {
@@ -95,7 +95,7 @@ public class Controller {
         return () -> {
             final Long totalProduced = model.getTotalThroughput().get();
             final Long sample = totalProduced - previousThroughput.getAndSet(totalProduced);
-            model.getEma().apply(sample.doubleValue()).ifPresent(this::updateTimeSeriesSourceData);
+            model.getSma().apply(sample.doubleValue()).ifPresent(this::updateTimeSeriesSourceData);
         };
     }
 

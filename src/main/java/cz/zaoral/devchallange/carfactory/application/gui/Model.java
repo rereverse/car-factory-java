@@ -1,6 +1,6 @@
 package cz.zaoral.devchallange.carfactory.application.gui;
 
-import cz.zaoral.devchallange.carfactory.util.ExponentialMovingAverage;
+import cz.zaoral.devchallange.carfactory.util.SimpleMovingAverage;
 import javafx.collections.ObservableList;
 import javafx.scene.chart.XYChart;
 import lombok.Getter;
@@ -13,7 +13,7 @@ import static javafx.collections.FXCollections.observableList;
 
 @Getter
 public class Model {
-    public static final Integer EMA_PERIOD = 13;
+    public static final Integer SMA_PERIOD = 8;
     public static final Integer TIME_WINDOW_SIZE = 900;
     public static final Integer MILLION = 1000000;
 
@@ -21,14 +21,14 @@ public class Model {
     private final ObservableList<String> producedCarsList = observableList(new LinkedList<>());
     private final AtomicInteger secondsCounter = new AtomicInteger();
     private final AtomicLong totalThroughput = new AtomicLong();
-    private ExponentialMovingAverage ema;
+    private SimpleMovingAverage sma;
 
     public void reset() {
         throughputSmoothed.clear();
         producedCarsList.clear();
         secondsCounter.set(0);
         totalThroughput.set(0);
-        ema = new ExponentialMovingAverage(EMA_PERIOD);
+        sma = new SimpleMovingAverage(SMA_PERIOD);
     }
 
     public Integer currentSeconds() {

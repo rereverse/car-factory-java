@@ -3,15 +3,12 @@ package cz.zaoral.devchallange.carfactory.application;
 import cz.zaoral.devchallange.carfactory.application.model.*;
 import cz.zaoral.devchallange.carfactory.application.model.Car.CarBeingBuilt;
 
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
 import static cz.zaoral.devchallange.carfactory.util.Utils.ensuringNotNull;
-import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 
 public class CarFactory {
@@ -20,7 +17,7 @@ public class CarFactory {
     public CarFactory(CarFactorySupply supply) {
         this.supply = ensuringNotNull(supply);
     }
-    
+
     public void rollOutACar(Consumer<Car> carConsumer) {
         produceCar().thenAcceptAsync(carConsumer);
     }
@@ -50,16 +47,13 @@ public class CarFactory {
     }
 
     private <T extends CarPart> CompletableFuture<T> produceCarPart(Supplier<T> carPartSupplier) {
-        return supplyAsync(carPartSupplier::get, supply.worker())
-                .thenApplyAsync(qualityControl(), supply.worker())
-                .thenComposeAsync(carPart -> carPart.isPresent()
-                        ? completedFuture(carPart.get())
-                        : produceCarPart(carPartSupplier), supply.worker());
-
-    }
-
-    private <T extends CarPart> Function<T, Optional<T>> qualityControl() {
-        return t -> t.defective() ? Optional.<T>empty() : Optional.of(t);
+        return supplyAsync(() -> {
+            T carPart = carPartSupplier.get();
+            while (carPart.defective()) {
+                carPart = carPartSupplier.get();
+            }
+            return carPart;
+        }, supply.worker());
     }
 
     private UnaryOperator<Car> paintWithRandomColour() {

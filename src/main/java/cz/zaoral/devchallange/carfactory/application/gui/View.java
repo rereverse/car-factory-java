@@ -17,7 +17,7 @@ import lombok.Getter;
 
 import java.util.stream.Stream;
 
-import static cz.zaoral.devchallange.carfactory.application.gui.Model.EMA_PERIOD;
+import static cz.zaoral.devchallange.carfactory.application.gui.Model.SMA_PERIOD;
 import static cz.zaoral.devchallange.carfactory.util.Utils.DEFAULT_DEFECTION_PROBABILITY;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
@@ -70,7 +70,7 @@ public class View {
                         coachworkDefectionsTextField,
                         wheelDefectionsTextField)));
 
-        hbox.getChildren().addAll(new Label("DEFECTIVE (from 0.00 to 0.71):"), new Label("ENGINE"),
+        hbox.getChildren().addAll(new Label("DEFECTIVE (from 0.0 to 1.0):"), new Label("ENGINE"),
                 engineDefectionsTextField, new Label("COACHWORK"), coachworkDefectionsTextField, new Label("WHEEL"),
                 wheelDefectionsTextField, applyDefectionsButton);
 
@@ -84,7 +84,7 @@ public class View {
 
         final NumberAxis yAxis = new NumberAxis();
         yAxis.setForceZeroInRange(false);
-        yAxis.setLabel(format("EMA(%d)", EMA_PERIOD));
+        yAxis.setLabel(format("SMA(%d)", SMA_PERIOD));
 
         final LineChart<Number, Number> lineChart = new LineChart<>(xAxis, yAxis);
         lineChart.getData().add(new XYChart.Series<>("Cars per second", model.getThroughputSmoothed()));
