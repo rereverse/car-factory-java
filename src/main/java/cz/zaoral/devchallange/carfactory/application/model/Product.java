@@ -1,10 +1,8 @@
 package cz.zaoral.devchallange.carfactory.application.model;
 
 import lombok.Getter;
-import lombok.ToString;
 
 @Getter
-@ToString
 public abstract class Product {
     private final Long serialNumber;
 

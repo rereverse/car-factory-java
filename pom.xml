@@ -3,23 +3,18 @@
          xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
-    <parent>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-parent</artifactId>
-        <version>1.2.3.RELEASE</version>
-    </parent>
-
     <modelVersion>4.0.0</modelVersion>
     <groupId>cz.zaoral.devchallange</groupId>
     <artifactId>car-factory</artifactId>
     <version>1.0-SNAPSHOT</version>
 
     <name>Car Factory</name>
-    <description>Parallel programming challange.</description>
+    <description>Parallel programming challenge.</description>
 
     <properties>
         <java.version>1.8</java.version>
         <lombok.version>1.16.4</lombok.version>
+        <maven.exec.version>1.4.0</maven.exec.version>
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
     </properties>
@@ -32,18 +27,16 @@
         </dependency>
     </dependencies>
 
-    <repositories>
-        <repository>
-            <id>spring-releases</id>
-            <name>Spring Releases</name>
-            <url>https://repo.spring.io/libs-release</url>
-        </repository>
-    </repositories>
-    <pluginRepositories>
-        <pluginRepository>
-            <id>spring-releases</id>
-            <name>Spring Releases</name>
-            <url>https://repo.spring.io/libs-release</url>
-        </pluginRepository>
-    </pluginRepositories>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>${maven.exec.version}</version>
+                <configuration>
+                    <mainClass>cz.zaoral.devchallange.carfactory.Main</mainClass>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>

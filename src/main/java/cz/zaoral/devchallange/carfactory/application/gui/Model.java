@@ -13,18 +13,25 @@ import static javafx.collections.FXCollections.observableList;
 
 @Getter
 public class Model {
-    public static final Integer EMA_PERIOD = 5;
-    public static final int TIME_WINDOW_SIZE = 780;
+    public static final Integer EMA_PERIOD = 13;
+    public static final Integer TIME_WINDOW_SIZE = 900;
+    public static final Integer MILLION = 1000000;
 
     private final ObservableList<XYChart.Data<Number, Number>> throughputSmoothed = observableList(new LinkedList<>());
+    private final ObservableList<String> producedCarsList = observableList(new LinkedList<>());
     private final AtomicInteger secondsCounter = new AtomicInteger();
     private final AtomicLong totalThroughput = new AtomicLong();
     private ExponentialMovingAverage ema;
 
     public void reset() {
         throughputSmoothed.clear();
+        producedCarsList.clear();
         secondsCounter.set(0);
         totalThroughput.set(0);
         ema = new ExponentialMovingAverage(EMA_PERIOD);
+    }
+
+    public Integer currentSeconds() {
+        return secondsCounter.get();
     }
 }

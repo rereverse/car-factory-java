@@ -1,8 +1,5 @@
 package cz.zaoral.devchallange.carfactory.application.model;
 
-import lombok.ToString;
-
-@ToString(callSuper = true)
 public abstract class CarPart extends Product {
     private final Boolean faulty;
 

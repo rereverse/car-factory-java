@@ -8,6 +8,7 @@ import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -46,8 +47,8 @@ public class View {
 
     private void createAndShow(Stage stage) {
         final VBox vBox = createVBox();
-        vBox.getChildren().addAll(createInputs(), createChart(), createControls());
-        Scene scene = new Scene(vBox, 800, 600);
+        vBox.getChildren().addAll(createInputs(), createChart(), createProducedCarsList(), createControls());
+        Scene scene = new Scene(vBox, 1000, 750);
         stage.setTitle("CarFactory");
         stage.setScene(scene);
         stage.show();
@@ -62,16 +63,16 @@ public class View {
         coachworkDefectionsTextField.setPrefWidth(50);
         wheelDefectionsTextField.setPrefWidth(50);
 
+        applyDefectionsButton.setDisable(TRUE);
         applyDefectionsButton.setOnAction(e -> runLater(
                 () -> controller.applyNewDefections(
                         engineDefectionsTextField,
                         coachworkDefectionsTextField,
                         wheelDefectionsTextField)));
-        applyDefectionsButton.setDisable(TRUE);
 
-        hbox.getChildren().addAll(new Label("DEFECTIVE % :"), new Label("ENGINE"), engineDefectionsTextField,
-                new Label("COACHWORK"), coachworkDefectionsTextField, new Label("WHEEL"), wheelDefectionsTextField,
-                applyDefectionsButton);
+        hbox.getChildren().addAll(new Label("DEFECTIVE (from 0.00 to 0.71):"), new Label("ENGINE"),
+                engineDefectionsTextField, new Label("COACHWORK"), coachworkDefectionsTextField, new Label("WHEEL"),
+                wheelDefectionsTextField, applyDefectionsButton);
 
         return hbox;
     }
@@ -114,10 +115,16 @@ public class View {
         return hBox;
     }
 
+    private ListView<String> createProducedCarsList() {
+        final ListView<String> producedCarsList = new ListView<>(model.getProducedCarsList());
+        producedCarsList.setPrefHeight(200);
+        return producedCarsList;
+    }
+
     private VBox createVBox() {
         VBox vbox = new VBox();
         vbox.setPadding(new Insets(10));
-        vbox.setSpacing(8);
+        vbox.setSpacing(5);
         return vbox;
     }
 

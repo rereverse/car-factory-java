@@ -1,10 +1,12 @@
 package cz.zaoral.devchallange.carfactory.application.model;
 
-import lombok.ToString;
-
-@ToString(callSuper = true)
 public class Wheel extends CarPart {
     public Wheel(Long serialNumber, Boolean faulty) {
         super(serialNumber, faulty);
+    }
+
+    @Override
+    public String toString() {
+        return "Wheel{sn=" + getSerialNumber() + ", defective=" + defective() + '}';
     }
 }

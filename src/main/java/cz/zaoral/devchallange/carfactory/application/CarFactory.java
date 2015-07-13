@@ -5,7 +5,6 @@ import cz.zaoral.devchallange.carfactory.application.model.Car.CarBeingBuilt;
 
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -53,15 +52,10 @@ public class CarFactory {
     private <T extends CarPart> CompletableFuture<T> produceCarPart(Supplier<T> carPartSupplier) {
         return supplyAsync(carPartSupplier::get, supply.worker())
                 .thenApplyAsync(qualityControl(), supply.worker())
-                .thenComposeAsync(anotherIfThisDefective(carPartSupplier), supply.worker());
+                .thenComposeAsync(carPart -> carPart.isPresent()
+                        ? completedFuture(carPart.get())
+                        : produceCarPart(carPartSupplier), supply.worker());
 
-    }
-
-    private <T extends CarPart> Function<Optional<T>, CompletionStage<T>> anotherIfThisDefective(
-            Supplier<T> carPartSupplier) {
-        return carPart -> carPart.isPresent()
-                ? completedFuture(carPart.get())
-                : produceCarPart(carPartSupplier);
     }
 
     private <T extends CarPart> Function<T, Optional<T>> qualityControl() {

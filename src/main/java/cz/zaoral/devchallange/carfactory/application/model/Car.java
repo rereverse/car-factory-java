@@ -1,7 +1,6 @@
 package cz.zaoral.devchallange.carfactory.application.model;
 
 import lombok.Getter;
-import lombok.ToString;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -11,7 +10,6 @@ import static cz.zaoral.devchallange.carfactory.util.Utils.ensuring;
 import static cz.zaoral.devchallange.carfactory.util.Utils.ensuringNotNull;
 import static java.util.Collections.unmodifiableList;
 
-@ToString(callSuper = true)
 public class Car extends Product {
     private static final Integer NUMBER_OF_WHEELS_PER_CAR = 4;
     private final Engine engine;
@@ -33,6 +31,12 @@ public class Car extends Product {
 
     public Car paint(CarColour colour) {
         return new Car(getSerialNumber(), engine, coachwork, wheels, colour);
+    }
+
+    @Override
+    public String toString() {
+        return "Car{" + "sn=" + getSerialNumber() + ", engine=" + engine + ", coachwork=" + coachwork + ", wheels=" +
+                wheels + ", colour=" + colour + '}';
     }
 
     @Getter

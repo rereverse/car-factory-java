@@ -7,15 +7,13 @@ import javafx.application.Application;
 import javafx.stage.Stage;
 
 public class Main extends Application {
-    public static void main(String[] args) {
-        launch(args);
-    }
 
     private View view;
 
     @Override
     public void start(Stage stage) throws Exception {
         Model model = new Model();
+
         view = new View(model, new Controller(model));
 
         view.show(stage);
@@ -24,5 +22,9 @@ public class Main extends Application {
     @Override
     public void stop() throws Exception {
         view.getStopButton().fire();
+    }
+
+    public static void main(String[] args) {
+        launch(args);
     }
 }
